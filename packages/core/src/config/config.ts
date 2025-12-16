@@ -324,6 +324,12 @@ export interface ConfigParameters {
   enableAgents?: boolean;
   enableModelAvailabilityService?: boolean;
   experimentalJitContext?: boolean;
+
+  localLlm?: {
+    enabled?: boolean;
+    baseUrl?: string;
+    model?: string;
+  };
 }
 
 export class Config {
@@ -449,6 +455,10 @@ export class Config {
 
   private readonly experimentalJitContext: boolean;
   private contextManager?: ContextManager;
+
+  private readonly localLlmEnabled: boolean;
+  private readonly localLlmBaseUrl: string;
+  private readonly localLlmModel: string;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -597,6 +607,11 @@ export class Config {
     this.disableYoloMode = params.disableYoloMode ?? false;
     this.hooks = params.hooks;
     this.experiments = params.experiments;
+
+    this.localLlmEnabled = params.localLlm?.enabled ?? false;
+    this.localLlmBaseUrl =
+      params.localLlm?.baseUrl ?? 'http://localhost:8000/v1beta';
+    this.localLlmModel = params.localLlm?.model ?? 'gemini-1.5-flash';
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -1673,6 +1688,18 @@ export class Config {
       compact: false,
     });
     debugLogger.debug('Experiments loaded', summaryString);
+  }
+
+  getLocalLlmEnabled(): boolean {
+    return this.localLlmEnabled;
+  }
+
+  getLocalLlmBaseUrl(): string {
+    return this.localLlmBaseUrl;
+  }
+
+  getLocalLlmModel(): string {
+    return this.localLlmModel;
   }
 }
 // Export model constants for use in CLI

@@ -439,6 +439,38 @@
       },
       "additionalProperties": false
     },
+    "localLlm": {
+      "title": "Local LLM",
+      "description": "Settings for using a local LLM server instead of the Google API.",
+      "markdownDescription": "Settings for using a local LLM server instead of the Google API.\n\n- Category: `Model`\n- Requires restart: `yes`\n- Default: `{}`",
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "title": "Enable Local LLM",
+          "description": "Whether to use the local LLM server.",
+          "markdownDescription": "Whether to use the local LLM server.\n\n- Category: `Model`\n- Requires restart: `yes`\n- Default: `false`",
+          "default": false,
+          "type": "boolean"
+        },
+        "baseUrl": {
+          "title": "Base URL",
+          "description": "The base URL of the local LLM server (e.g., http://localhost:8000/v1beta).",
+          "markdownDescription": "The base URL of the local LLM server (e.g., http://localhost:8000/v1beta).\n\n- Category: `Model`\n- Requires restart: `yes`\n- Default: `http://localhost:8000/v1beta`",
+          "default": "http://localhost:8000/v1beta",
+          "type": "string",
+          "format": "uri"
+        },
+        "model": {
+          "title": "Model Name",
+          "description": "The model name to use with the local LLM server (e.g., gemini-1.5-flash).",
+          "markdownDescription": "The model name to use with the local LLM server (e.g., gemini-1.5-flash).\n\n- Category: `Model`\n- Requires restart: `yes`\n- Default: `gemini-1.5-flash`",
+          "default": "gemini-1.5-flash",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "modelConfigs": {
       "title": "Model Configs",
       "description": "Model configurations.",

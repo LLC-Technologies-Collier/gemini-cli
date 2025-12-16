@@ -24,6 +24,7 @@ import { FakeContentGenerator } from './fakeContentGenerator.js';
 import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { RecordingContentGenerator } from './recordingContentGenerator.js';
 import { getVersion, getEffectiveModel } from '../../index.js';
+import { LocalContentGenerator } from './localContentGenerator.js';
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -116,6 +117,11 @@ export async function createContentGenerator(
     if (gcConfig.fakeResponses) {
       return FakeContentGenerator.fromFile(gcConfig.fakeResponses);
     }
+
+    if (gcConfig.getLocalLlmEnabled()) {
+      return new LocalContentGenerator(gcConfig);
+    }
+
     const version = await getVersion();
     const model = getEffectiveModel(
       gcConfig.isInFallbackMode(),
