@@ -71,6 +71,9 @@ export enum AuthType {
  * 3. GEMINI_API_KEY -> USE_GEMINI
  */
 export function getAuthTypeFromEnv(): AuthType | undefined {
+  if (process.env['GEMINI_CLI_BASE_URL']) {
+    return AuthType.USE_GEMINI;
+  }
   if (process.env['GOOGLE_GENAI_USE_GCA'] === 'true') {
     return AuthType.LOGIN_WITH_GOOGLE;
   }
@@ -164,10 +167,13 @@ export async function createContentGenerator(
       );
       return new LoggingContentGenerator(fakeGenerator, gcConfig);
     }
+
+    const baseUrlEnv = process.env['GEMINI_CLI_BASE_URL'];
     const version = await getVersion();
     const model = resolveModel(
       gcConfig.getModel(),
-      config.authType === AuthType.USE_GEMINI ||
+      !!baseUrlEnv ||
+        config.authType === AuthType.USE_GEMINI ||
         config.authType === AuthType.USE_VERTEX_AI ||
         ((await gcConfig.getGemini31Launched?.()) ?? false),
     );
@@ -183,6 +189,30 @@ export async function createContentGenerator(
       ...customHeadersMap,
       'User-Agent': userAgent,
     };
+
+    // If redirection is active, force USE_GEMINI flow regardless of input config
+    if (baseUrlEnv) {
+      let headers: Record<string, string> = { ...baseHeaders };
+      if (gcConfig?.getUsageStatisticsEnabled()) {
+        const installationManager = new InstallationManager();
+        const installationId = installationManager.getInstallationId();
+        headers = {
+          ...headers,
+          'x-gemini-api-privileged-user-id': `${installationId}`,
+        };
+      }
+      const httpOptions = {
+        headers,
+        baseUrl: baseUrlEnv,
+      };
+
+      const googleGenAI = new GoogleGenAI({
+        apiKey: config.apiKey || 'sk-dummy',
+        httpOptions,
+        ...(apiVersionEnv && { apiVersion: apiVersionEnv }),
+      });
+      return new LoggingContentGenerator(googleGenAI.models, gcConfig);
+    }
 
     if (
       apiKeyAuthMechanism === 'bearer' &&
@@ -225,13 +255,15 @@ export async function createContentGenerator(
           'x-gemini-api-privileged-user-id': `${installationId}`,
         };
       }
+      const baseUrl =
+        config.baseUrl || process.env['GEMINI_CLI_BASE_URL'] || undefined;
       const httpOptions: {
         baseUrl?: string;
         headers: Record<string, string>;
       } = { headers };
 
-      if (config.baseUrl) {
-        httpOptions.baseUrl = config.baseUrl;
+      if (baseUrl) {
+        httpOptions.baseUrl = baseUrl;
       }
 
       const googleGenAI = new GoogleGenAI({

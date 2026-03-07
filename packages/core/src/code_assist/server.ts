@@ -501,7 +501,9 @@ export class CodeAssistServer implements ContentGenerator {
 
   private getBaseUrl(): string {
     const endpoint =
-      process.env['CODE_ASSIST_ENDPOINT'] ?? CODE_ASSIST_ENDPOINT;
+      process.env['GEMINI_CLI_BASE_URL'] ||
+      process.env['CODE_ASSIST_ENDPOINT'] ||
+      CODE_ASSIST_ENDPOINT;
     const version =
       process.env['CODE_ASSIST_API_VERSION'] || CODE_ASSIST_API_VERSION;
     return `${endpoint}/${version}`;

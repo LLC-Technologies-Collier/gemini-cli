@@ -223,6 +223,20 @@ export class LoggingContentGenerator implements ContentGenerator {
 
     // Case 3: Default to the public Gemini API endpoint.
     // This is used when an API key is provided but not for Vertex AI.
+    const baseUrlEnv = process.env['GEMINI_CLI_BASE_URL'];
+    if (baseUrlEnv) {
+      try {
+        const url = new URL(baseUrlEnv);
+        const port = url.port
+          ? parseInt(url.port, 10)
+          : url.protocol === 'https:'
+            ? 443
+            : 80;
+        return { address: url.hostname, port };
+      } catch {
+        return { address: baseUrlEnv, port: 0 };
+      }
+    }
     return { address: `generativelanguage.googleapis.com`, port: 443 };
   }
 

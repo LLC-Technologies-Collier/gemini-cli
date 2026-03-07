@@ -216,6 +216,11 @@ export function logFileOperation(
 }
 
 export function logApiRequest(config: Config, event: ApiRequestEvent): void {
+  if (event.prompt?.server) {
+    debugLogger.debug(
+      `API Request to: ${event.prompt.server.address}:${event.prompt.server.port}`,
+    );
+  }
   ClearcutLogger.getInstance(config)?.logApiRequestEvent(event);
   bufferTelemetryEvent(() => {
     const logger = logs.getLogger(SERVICE_NAME);
